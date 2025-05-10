@@ -10,8 +10,8 @@ interface UserType {
 
 function ChatUser({name, about1, about2}: UserType) {
     return (
-        <div className=" heading py-3 px-3 flex flex-row align-middle items-center justify-between gap-10 border-b-[1px] border-gray-400">
-            <div className="about flex flex-row gap-3 items-center w-[10rem] md:min-w-64">
+        <div className=" heading py-3 px-3 flex flex-row align-middle items-center justify-between gap-4 border-b-[1px] border-gray-400">
+            <div className="about flex flex-row gap-3 items-center w-full md:min-w-64">
                 <p className=" font-medium text-lg bg-gray-400 text-center py-1 px-3 rounded-full">{name[0].toUpperCase()}</p>
                 <div>
                     <h1 className=" font-medium text-base text-white leading-5">{name}</h1>
