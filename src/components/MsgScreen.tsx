@@ -5,7 +5,7 @@ import Messages from "./Message/Message";
 import Login from "./Login";
 
 function MessageScreen() {
-    const [isLogin, setIsLogin] = useState(true);
+    const [isLogin, setIsLogin] = useState(false);
     return (
 
         <div>
