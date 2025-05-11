@@ -36,7 +36,7 @@ function SignupForm() {
     return (
         <div className=" flex flex-col gap-2 text-center justify-center px-8 sm:px-12 py-8 sm:py-12">
             <div>
-                <h1 className=" text-xl text-gray-300 font-semibold tracking-wider">SignUp</h1>
+                <h1 className=" text-xl text-gray-300 font-semibold tracking-wider underline underline-offset-2">SignUp</h1>
             </div>
             <form action="" className=" flex flex-col gap-2 w-full justify-center items-center my-4">
                 <div className="flex flex-col-reverse items-center">
