@@ -4,10 +4,12 @@ import { auth, db } from '../../../backend/firebase';
 import { toast } from "react-toastify";
 import { FaGoogle } from "react-icons/fa";
 import { collection, addDoc } from "firebase/firestore"; 
+import upload from '../../../backend/upload';
 
 function SignupForm() {
     const [profileChosen, setProfileChosen] = useState(false);
     const [profile, setProfile] = useState<string>('');
+    const [profileFile, setProfileFile] = useState<File | null>(null);
 
     const provider = new GoogleAuthProvider();
 
@@ -27,12 +29,13 @@ function SignupForm() {
         setPassword(e.target.value);
     }
 
-    async function addDataToDB(username: string, email: string, uid: string) {
+    async function addDataToDB(username: string, email: string, uid: string, profile_pic: string | null) {
         try {
             const docRef = await addDoc(collection(db, "users"), {
                 username: username,
                 email: email,
                 id: uid,
+                profile_pic: profile_pic,
                 blocked: []
             });
 
@@ -62,7 +65,13 @@ function SignupForm() {
                     .then(async (userCredentials) => {
                         const user = userCredentials.user;
                         console.log(user);
-                        await addDataToDB(username, email, user.uid);
+                        if (profileChosen) {
+                            const downloadURL = await upload(profileFile);
+                            console.log(downloadURL);
+                            await addDataToDB(username, email, user.uid, downloadURL);
+                        } else {
+                            await addDataToDB(username, email, user.uid, null);
+                        }
                         toast.success("Signed In successfully")
                     })
                     .catch(error => {
@@ -99,8 +108,12 @@ function SignupForm() {
     }
 
     function fileInput(e: BaseSyntheticEvent) {
-        setProfileChosen(true);
-        setProfile(URL.createObjectURL(e.target.files[0]));
+        const file = e.target.files[0];
+        if (file) {
+            setProfileChosen(true);
+            setProfile(URL.createObjectURL(file));
+            setProfileFile(file);
+        }
     }
     return (
         <div className=" flex flex-col gap-2 text-center justify-center px-8 sm:px-12 py-8 sm:py-12">
