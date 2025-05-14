@@ -1,4 +1,4 @@
-import { useState, type BaseSyntheticEvent } from "react";
+import { useEffect, useState, type BaseSyntheticEvent } from "react";
 import { createUserWithEmailAndPassword, validatePassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth, db } from '../../../backend/firebase';
 import { toast } from "react-toastify";
@@ -6,10 +6,11 @@ import { FaGoogle } from "react-icons/fa";
 import { collection, addDoc } from "firebase/firestore"; 
 import upload from '../../../backend/upload';
 
-function SignupForm() {
+function SignupForm({ loaderpass, signup }: { loaderpass: (status: boolean) => void, signup: (status: boolean) => void }) {
     const [profileChosen, setProfileChosen] = useState(false);
     const [profile, setProfile] = useState<string>('');
     const [profileFile, setProfileFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const provider = new GoogleAuthProvider();
 
@@ -28,6 +29,10 @@ function SignupForm() {
     function passwordInp(e: BaseSyntheticEvent) {
         setPassword(e.target.value);
     }
+
+    useEffect(() => {
+        loaderpass(loading)
+    }, [loading])
 
     async function addDataToDB(username: string, email: string, uid: string, profile_pic: string | null) {
         try {
@@ -56,10 +61,10 @@ function SignupForm() {
 
     async function signupBtnClick(e: BaseSyntheticEvent) {
         e.preventDefault();
-        console.log(e.target);
         
         if (username.length>=6 && email.includes(".") && email.includes("@") && password.length>=8) {
             const pwdStatus = await validatePassword(auth, password);
+            setLoading(true);
             if (pwdStatus.isValid) {
                 createUserWithEmailAndPassword(auth, email, password)
                     .then(async (userCredentials) => {
@@ -73,9 +78,14 @@ function SignupForm() {
                             await addDataToDB(username, email, user.uid, null);
                         }
                         toast.success("Signed In successfully")
+                        setLoading(false);
+                        setTimeout(() => {
+                            signup(true);
+                        }, 500);
                     })
                     .catch(error => {
                         console.log("Error in signup");
+                        setLoading(false);
                         if (error.code == "auth/email-already-in-use") {
                             toast.error("User already exists, please login!");
                         } else {
@@ -84,6 +94,7 @@ function SignupForm() {
                     })
                 } else {
                     toast.warning("Password must contain lowecase, uppercase, number and special characters.")
+                    setLoading(false);
                 }
         } else {
             toast.error("Min Length: Username: 6, password: 8");
@@ -91,6 +102,7 @@ function SignupForm() {
     }
 
     function googleLogin() {
+        setLoading(true);
         signInWithPopup(auth, provider)
         .then((result) => {
             const credential: any = GoogleAuthProvider.credentialFromResult(result);
@@ -98,10 +110,15 @@ function SignupForm() {
             const user = result.user;
             console.log(`Access token: ${token}, user: ${user}`);
             toast.success("Logged In");
+            setLoading(false);
+            setTimeout(() => {
+                signup(true);
+            }, 500);
         }).catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
             const authEmail = error.customData.email;
+            setLoading(false);
             // const credential = GoogleAuthProvider.credentialFromError(error);
             toast.error(`Error login with google: ${errorCode}, ${errorMessage} on ${authEmail}`);
         });
